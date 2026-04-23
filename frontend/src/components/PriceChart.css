@@ -1,0 +1,18 @@
+.price-chart, .indicator-chart {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 16px;
+}
+.chart-title {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: #c7d2fe;
+  font-weight: 600;
+}
+.chart-empty {
+  color: #64748b;
+  text-align: center;
+  padding: 40px 0;
+}

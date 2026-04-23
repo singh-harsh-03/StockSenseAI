@@ -1,0 +1,119 @@
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+.login-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 24px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  backdrop-filter: blur(20px);
+}
+.login-brand {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.login-logo {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 8px;
+}
+.login-brand h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, #6366f1, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.login-brand p {
+  color: #64748b;
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+}
+.login-local-hint {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+.login-local-hint code {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+.login-footer-link {
+  text-align: center;
+  margin-top: 20px;
+}
+.login-footer-link a {
+  color: #818cf8;
+  font-size: 0.85rem;
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.login-input {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(30, 27, 75, 0.5);
+  color: #e0e7ff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.login-input:focus {
+  border-color: #6366f1;
+}
+.login-input::placeholder {
+  color: #64748b;
+}
+.login-btn {
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  margin-top: 4px;
+}
+.login-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.login-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.login-error {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin: 0;
+  text-align: center;
+}
+.login-toggle {
+  text-align: center;
+  color: #64748b;
+  margin-top: 20px;
+  font-size: 0.85rem;
+}
+.login-toggle-btn {
+  background: none;
+  border: none;
+  color: #818cf8;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.login-toggle-btn:hover {
+  color: #a78bfa;
+}

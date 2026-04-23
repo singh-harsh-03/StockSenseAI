@@ -1,0 +1,57 @@
+.backtest-results {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 20px;
+}
+.backtest-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.backtest-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e0e7ff;
+}
+.stat-value.positive { color: #10b981; }
+.stat-value.negative { color: #ef4444; }
+
+.trades-table-wrap {
+  margin-top: 24px;
+  overflow-x: auto;
+}
+.trades-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.trades-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: #64748b;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+}
+.trades-table td {
+  padding: 10px 12px;
+  color: #c7d2fe;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.trades-table .positive { color: #10b981; font-weight: 600; }
+.trades-table .negative { color: #ef4444; font-weight: 600; }

@@ -1,0 +1,14 @@
+{
+  "venvPath": "backend/.venv",
+  "pythonVersion": "3.14",
+  "pythonPlatform": "Darwin",
+  "executionEnvironments": [
+    {
+      "root": "backend",
+      "pythonVersion": "3.14",
+      "extraPaths": ["backend"]
+    }
+  ],
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false
+}

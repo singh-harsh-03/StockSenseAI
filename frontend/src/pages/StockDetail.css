@@ -1,0 +1,213 @@
+.stock-detail {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+.stock-search-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 28px;
+  align-items: center;
+  overflow: visible;
+}
+.stock-search-input {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(30, 27, 75, 0.5);
+  color: #e0e7ff;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.stock-search-input:focus { border-color: #6366f1; }
+.stock-search-input::placeholder { color: #64748b; }
+.stock-search-btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.stock-search-btn:hover { opacity: 0.85; }
+
+.stock-loading, .stock-error {
+  text-align: center;
+  padding: 40px;
+}
+.stock-loading { color: #818cf8; }
+.stock-error { color: #ef4444; }
+
+.stock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stock-header h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #e0e7ff;
+}
+.stock-ticker-label {
+  color: #818cf8;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.stock-header-right {
+  text-align: right;
+}
+.stock-price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #e0e7ff;
+  margin: 0 0 8px;
+}
+.stock-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-primary {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary {
+  padding: 10px 20px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 12px;
+  background: transparent;
+  color: #a5b4fc;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background: rgba(99, 102, 241, 0.1); }
+
+.stock-indicators-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.indicator-pill {
+  background: rgba(30, 27, 75, 0.5);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 90px;
+}
+.indicator-pill span {
+  font-size: 0.7rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.indicator-pill strong {
+  color: #c7d2fe;
+  font-size: 0.95rem;
+}
+
+.chart-section {
+  margin-top: 8px;
+}
+.chart-range-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.chart-range-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(30, 27, 75, 0.35);
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.chart-range-btn:hover {
+  color: #c7d2fe;
+  border-color: rgba(99, 102, 241, 0.35);
+  background: rgba(99, 102, 241, 0.12);
+}
+.chart-range-btn-active {
+  color: #e0e7ff;
+  border-color: rgba(99, 102, 241, 0.55);
+  background: rgba(99, 102, 241, 0.28);
+}
+.chart-section-body {
+  position: relative;
+  transition: opacity 0.2s;
+}
+.chart-section-loading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.ai-history-panel {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  background: rgba(15, 23, 42, 0.45);
+}
+.ai-history-title {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #c7d2fe;
+}
+.ai-history-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+.ai-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ai-history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+.ai-history-signal {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.ai-history-signal--buy { color: #34d399; }
+.ai-history-signal--sell { color: #f87171; }
+.ai-history-signal--hold { color: #fbbf24; }
+.ai-history-time {
+  font-size: 0.75rem;
+  color: #64748b;
+}

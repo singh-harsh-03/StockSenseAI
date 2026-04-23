@@ -1,0 +1,74 @@
+.backtester {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+.backtester h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, #6366f1, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.bt-subtitle {
+  color: #64748b;
+  margin: 4px 0 28px;
+  font-size: 0.9rem;
+}
+.bt-form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+.bt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bt-field label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.bt-field input, .bt-field select,
+.bt-field .stock-search-wrap > input {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(30, 27, 75, 0.5);
+  color: #e0e7ff;
+  font-size: 0.9rem;
+  outline: none;
+}
+.bt-field input:focus, .bt-field select:focus,
+.bt-field .stock-search-wrap > input:focus {
+  border-color: #6366f1;
+}
+.bt-field-ticker {
+  flex: 1 1 220px;
+  min-width: 160px;
+  max-width: 360px;
+}
+.bt-field select option {
+  background: #1e1b4b;
+}
+.bt-run {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+.bt-run:hover { opacity: 0.85; }
+.bt-run:disabled { opacity: 0.5; }
+.bt-error {
+  color: #ef4444;
+  text-align: center;
+}
