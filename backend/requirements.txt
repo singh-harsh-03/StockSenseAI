@@ -22,7 +22,6 @@ jiter==0.13.0
 multitasking==0.0.12
 numpy==2.2.6
 pandas==2.3.2
-pandas-ta==0.4.71b0
 peewee==4.0.2
 platformdirs==4.9.4
 protobuf==7.34.1
