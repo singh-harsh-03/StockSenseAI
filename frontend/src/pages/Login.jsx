@@ -58,10 +58,7 @@ export default function Login() {
           <h1>StockSense AI</h1>
           <p>AI-powered stock research for Indian markets</p>
         </div>
-        <p className="login-local-hint">
-          Accounts are stored in the app database (SQLite by default). Use a strong password; set{' '}
-          <code>JWT_SECRET</code> in <code>backend/.env</code> for production.
-        </p>
+      
         <form onSubmit={handleSubmit} className="login-form">
           {isSignUp && (
             <input
