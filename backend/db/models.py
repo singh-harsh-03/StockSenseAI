@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Numeric, DateTime, Date, Text
+from sqlalchemy import Column, String, Integer, Numeric, DateTime, Date, Text, ForeignKey
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 import uuid
@@ -29,7 +29,7 @@ class Stock(Base):
 class Watchlist(Base):
     __tablename__ = "watchlist"
     id = Column(String, primary_key=True, default=gen_id)
-    user_id = Column(String, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     ticker = Column(String, index=True)
     added_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -37,7 +37,7 @@ class Watchlist(Base):
 class Portfolio(Base):
     __tablename__ = "portfolio"
     id = Column(String, primary_key=True, default=gen_id)
-    user_id = Column(String, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     ticker = Column(String, index=True)
     buy_price = Column(Numeric(10, 2))
     quantity = Column(Integer)
@@ -47,7 +47,7 @@ class Portfolio(Base):
 class AILog(Base):
     __tablename__ = "ai_log"
     id = Column(String, primary_key=True, default=gen_id)
-    user_id = Column(String, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     ticker = Column(String, index=True)
     signal = Column(String)
     reasoning = Column(Text)

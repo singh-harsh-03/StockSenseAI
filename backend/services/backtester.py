@@ -1,12 +1,13 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
+import asyncio
 from ta.momentum import RSIIndicator
 from ta.trend import MACD
 from typing import Dict, Any, List
 
 
-def run_backtest(
+async def run_backtest(
     ticker: str,
     strategy: str = "rsi",
     from_date: str = "2023-01-01",
@@ -22,7 +23,7 @@ def run_backtest(
     Returns trade log, equity curve data, and summary statistics.
     """
     stock = yf.Ticker(ticker)
-    df = stock.history(start=from_date, end=to_date)
+    df = await asyncio.to_thread(stock.history, start=from_date, end=to_date)
 
     if df.empty:
         raise ValueError(f"No data found for {ticker} in date range {from_date} to {to_date}")

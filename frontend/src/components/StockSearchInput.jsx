@@ -12,7 +12,7 @@ export default function StockSearchInput({
   className = '',
   inputClassName = '',
   minChars = 2,
-  debounceMs = 200,
+  debounceMs = 500,
   disabled = false,
   required = false,
   autoComplete = 'off',
@@ -36,10 +36,15 @@ export default function StockSearchInput({
       const res = await searchStocks(t, 15);
       if (id !== requestIdRef.current) return;
       setResults(res.data.data || []);
-    } catch {
+    } catch (e) {
       if (id !== requestIdRef.current) return;
       setResults([]);
-      setErr('Search failed — same host as Vite (127.0.0.1 vs localhost) and API on :8000');
+      const status = e.response?.status;
+      if (status === 429) {
+        setErr('Rate limited — wait ~30s and try again');
+      } else {
+        setErr('Search unavailable. Type the full ticker (e.g. RELIANCE.NS)');
+      }
     } finally {
       if (id === requestIdRef.current) {
         setLoading(false);
@@ -47,6 +52,7 @@ export default function StockSearchInput({
       }
     }
   };
+
 
   useEffect(() => {
     if (suppressSuggestions) {
@@ -66,6 +72,16 @@ export default function StockSearchInput({
 
     const t = value.trim();
     if (t.length < minChars) {
+      setResults([]);
+      setErr('');
+      setDebouncing(false);
+      return;
+    }
+
+    // Skip search if input already looks like a full ticker (e.g. RELIANCE.NS, SAMBHV.BO)
+    // No point searching Yahoo when the user has typed/pasted a complete symbol.
+    const looksLikeTicker = /^[A-Za-z0-9]{1,10}\.(NS|BO|BSE|MCX|CDS)$/i.test(t);
+    if (looksLikeTicker) {
       setResults([]);
       setErr('');
       setDebouncing(false);

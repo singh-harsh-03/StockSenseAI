@@ -49,7 +49,15 @@ export default function StockDetail() {
       setStockData(res.data.data);
       setTicker(t);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Stock not found');
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail;
+      if (status === 429) {
+        setError('⚠️ Too many requests — Yahoo Finance is rate limiting. Please wait 30–60 seconds and try again.');
+      } else if (status === 404) {
+        setError(`No data found for "${t}". Check the ticker symbol (e.g. RELIANCE.NS, TCS.NS).`);
+      } else {
+        setError(detail || 'Failed to load stock data. Please try again.');
+      }
       if (!soft) {
         setStockData(null);
         setAiData(null);
@@ -80,8 +88,13 @@ export default function StockDetail() {
       const res = await getAISuggestion(ticker);
       setAiData(res.data.data);
       await refreshAiHistory(ticker);
-    } catch {
-      setAiData({ signal: 'N/A', reasoning: 'AI analysis failed. Check API key.', saved_to_history: false });
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 429) {
+        setAiData({ signal: 'N/A', reasoning: '⚠️ Rate limited by Yahoo Finance. Please wait 30–60 seconds and try again.', saved_to_history: false });
+      } else {
+        setAiData({ signal: 'N/A', reasoning: err.response?.data?.detail || 'AI analysis failed. Check API key.', saved_to_history: false });
+      }
     } finally {
       setAiLoading(false);
     }

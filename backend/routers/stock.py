@@ -1,4 +1,5 @@
 import uuid
+import asyncio
 from decimal import Decimal
 from typing import Optional
 
@@ -21,20 +22,27 @@ router = APIRouter(prefix="/stock", tags=["Stock"])
 
 
 @router.get("/search")
-def stock_search(q: str = "", limit: int = 15):
+async def stock_search(q: str = "", limit: int = 15):
     """Keyword search across Yahoo Finance symbols and company names."""
     try:
-        results = search_yahoo_finance(q, limit=limit)
+        results = await search_yahoo_finance(q, limit=limit)
         return {"success": True, "data": results}
     except Exception as e:
+        msg = str(e).lower()
+        if "429" in msg or "rate limit" in msg or "too many requests" in msg:
+            raise HTTPException(
+                status_code=429,
+                detail="Yahoo Finance is rate limiting requests. Please wait 30–60 seconds and try again.",
+            ) from e
         raise HTTPException(
             status_code=502,
-            detail=f"Yahoo search failed (rate limit or network). Try again shortly. {e}",
+            detail=f"Yahoo Finance search failed. Try again shortly. {e}",
         ) from e
 
 
+
 @router.get("/{ticker}")
-def get_stock(
+async def get_stock(
     ticker: str,
     chart_range: str = Query("1y", description="Chart window: 1d, 1w, 1mo, 1y, 5y"),
 ):
@@ -42,8 +50,8 @@ def get_stock(
     key = chart_range if chart_range in CHART_PRESETS else "1y"
     period, interval = CHART_PRESETS[key]
     try:
-        indicators = fetch_stock_data(ticker)
-        history = fetch_price_history(ticker, period=period, interval=interval)
+        indicators = await fetch_stock_data(ticker)
+        history = await fetch_price_history(ticker, period=period, interval=interval)
         return {
             "success": True,
             "data": {
@@ -54,19 +62,28 @@ def get_stock(
                 "chart_interval": interval,
             },
         }
-    except Exception as e:
+    except ValueError as e:
+        # Raised when yfinance returns empty data (ticker not found)
         raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        msg = str(e).lower()
+        if "429" in msg or "rate limit" in msg or "too many requests" in msg:
+            raise HTTPException(
+                status_code=429,
+                detail="Yahoo Finance is rate limiting requests. Please wait 30–60 seconds and try again.",
+            )
+        raise HTTPException(status_code=502, detail=f"Upstream data error: {e}")
 
 
 @router.get("/{ticker}/ai")
-def get_ai_analysis(
+async def get_ai_analysis(
     ticker: str,
     db: Session = Depends(get_db),
     user: Optional[dict] = Depends(get_optional_current_user),
 ):
     """Get AI-powered BUY/HOLD/SELL suggestion. If signed in (Bearer token), saves a row to your AI log."""
     try:
-        result = get_ai_suggestion(ticker)
+        result = await get_ai_suggestion(ticker)
         saved = False
         if user:
             log = AILog(
@@ -78,8 +95,10 @@ def get_ai_analysis(
                 rsi_value=Decimal(str(result.get("rsi", 0) or 0)),
                 macd_value=Decimal(str(result.get("macd", 0) or 0)),
             )
-            db.add(log)
-            db.commit()
+            def save_log():
+                db.add(log)
+                db.commit()
+            await asyncio.to_thread(save_log)
             saved = True
         return {"success": True, "data": {**result, "saved_to_history": saved}}
     except Exception as e:
@@ -87,10 +106,10 @@ def get_ai_analysis(
 
 
 @router.get("/{ticker}/backtest")
-def get_backtest(ticker: str, strategy: str = "rsi", from_date: str = "2023-01-01", to_date: str = "2024-01-01"):
+async def get_backtest(ticker: str, strategy: str = "rsi", from_date: str = "2023-01-01", to_date: str = "2024-01-01"):
     """Run a backtest for a stock with a given strategy and date range."""
     try:
-        result = run_backtest(ticker, strategy, from_date, to_date)
+        result = await run_backtest(ticker, strategy, from_date, to_date)
         return {"success": True, "data": result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

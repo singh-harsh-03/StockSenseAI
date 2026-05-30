@@ -61,6 +61,12 @@ Protected routes (`/watchlist`, `/portfolio`, `/ai-log`, `/auth/me`) expect:
 
 Tokens are returned from `POST /auth/register` and `POST /auth/login`. The frontend stores the token in `localStorage` and sends it on each request.
 
+## Performance & Rate Limits
+
+To avoid getting rate-limited by Yahoo Finance (`429 Too Many Requests`), this app implements two key optimizations:
+1. **Concurrent Watchlist Fetching:** The backend `GET /watchlist` endpoint uses `asyncio.gather` to fetch live prices for all watched stocks concurrently, resolving the N+1 API call issue on the dashboard.
+2. **AI Endpoint Caching:** The `fetch_stock_data` function uses a 60-second TTL cache. This ensures that requesting an AI Suggestion immediately after loading a stock's detail page hits the cache instead of making a duplicate external API call.
+
 ## License
 
 Personal / portfolio use.

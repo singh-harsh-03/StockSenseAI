@@ -1,9 +1,16 @@
 import time
-from typing import Any, Dict, List
+import asyncio
+from typing import Any, Dict, List, Tuple
 
 import httpx
 
 SEARCH_URL = "https://query2.finance.yahoo.com/v1/finance/search"
+
+# Simple in-memory TTL cache — avoids hammering Yahoo on every keystroke.
+# Key: normalised query string. Value: (results, expiry_unix_ts)
+
+_CACHE_TTL = 300  # seconds (5 minutes)
+_search_cache: Dict[str, Tuple[List[Dict[str, str]], float]] = {}
 
 # Browser-like headers; Referer helps Yahoo accept automated requests.
 HEADERS = {
@@ -43,36 +50,35 @@ def _normalize_quote(quote: Dict[str, Any]) -> Dict[str, str]:
     }
 
 
-def _fetch_yahoo_search_json(params: Dict[str, Any]) -> dict:
+async def _fetch_yahoo_search_json(params: Dict[str, Any]) -> dict:
     """Call Yahoo search; prefer curl_cffi (Chrome TLS) with retries on 429."""
     last_error: Exception | None = None
 
     for attempt in range(3):
         try:
-            import curl_cffi.requests as cr
-
-            r = cr.get(
-                SEARCH_URL,
-                params=params,
-                headers=HEADERS,
-                impersonate="chrome",
-                timeout=20,
-            )
-            if r.status_code == 429:
-                time.sleep(1.0 + attempt * 1.5)
-                continue
-            r.raise_for_status()
-            return r.json()
+            from curl_cffi.requests import AsyncSession
+            async with AsyncSession(impersonate="chrome") as cr:
+                r = await cr.get(
+                    SEARCH_URL,
+                    params=params,
+                    headers=HEADERS,
+                    timeout=20,
+                )
+                if r.status_code == 429:
+                    await asyncio.sleep(1.0 + attempt * 1.5)
+                    continue
+                r.raise_for_status()
+                return r.json()
         except Exception as e:
             last_error = e
             break
 
     for attempt in range(3):
         try:
-            with httpx.Client(timeout=20.0, headers=HEADERS) as client:
-                r = client.get(SEARCH_URL, params=params)
+            async with httpx.AsyncClient(timeout=20.0, headers=HEADERS) as client:
+                r = await client.get(SEARCH_URL, params=params)
                 if r.status_code == 429:
-                    time.sleep(1.0 + attempt * 1.5)
+                    await asyncio.sleep(1.0 + attempt * 1.5)
                     continue
                 r.raise_for_status()
                 return r.json()
@@ -83,18 +89,30 @@ def _fetch_yahoo_search_json(params: Dict[str, Any]) -> dict:
     raise last_error
 
 
-def search_yahoo_finance(query: str, limit: int = 15) -> List[Dict[str, str]]:
+async def search_yahoo_finance(query: str, limit: int = 15) -> List[Dict[str, str]]:
     """
     Search Yahoo Finance for equities/ETFs. After Yahoo returns candidates,
     optionally keep only rows where every whitespace-separated keyword appears
     somewhere in symbol, names, exchange, sector, or industry (case-insensitive).
     If that filter removes everything, fall back to Yahoo's ranked list.
+
+    Results are cached in-memory for _CACHE_TTL seconds to avoid rate-limiting.
     """
     q = query.strip()
     if not q:
         return []
 
     limit = max(1, min(limit, 25))
+    cache_key = q.lower()
+
+    # --- Cache hit? ---
+    cached = _search_cache.get(cache_key)
+    if cached is not None:
+        results, expiry = cached
+        if time.monotonic() < expiry:
+            return results[:limit]
+        del _search_cache[cache_key]
+
     params = {
         "q": q,
         "quotesCount": min(50, limit * 3),
@@ -102,7 +120,7 @@ def search_yahoo_finance(query: str, limit: int = 15) -> List[Dict[str, str]]:
         "listsCount": 0,
     }
 
-    payload = _fetch_yahoo_search_json(params)
+    payload = await _fetch_yahoo_search_json(params)
 
     quotes = payload.get("quotes") or []
     allowed_types = {"EQUITY", "ETF"}
@@ -124,5 +142,8 @@ def search_yahoo_finance(query: str, limit: int = 15) -> List[Dict[str, str]]:
             filtered.append(_normalize_quote(quote))
             if len(filtered) >= limit:
                 break
+
+    # --- Store in cache ---
+    _search_cache[cache_key] = (filtered, time.monotonic() + _CACHE_TTL)
 
     return filtered

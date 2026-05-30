@@ -1,6 +1,6 @@
 import os
 import logging
-from groq import Groq
+from groq import AsyncGroq
 from services.stock_data import fetch_stock_data
 from typing import Dict, Any
 
@@ -41,13 +41,13 @@ Do NOT include disclaimers.
 """
 
 
-def get_ai_suggestion(ticker: str) -> Dict[str, Any]:
+async def get_ai_suggestion(ticker: str) -> Dict[str, Any]:
     """
     Fetch current indicators for a ticker and call Groq API
     to get a BUY/HOLD/SELL suggestion with reasoning.
     """
     # Fetch live indicator data
-    data = fetch_stock_data(ticker)
+    data = await fetch_stock_data(ticker)
 
     # Build the prompt
     prompt = PROMPT_TEMPLATE.format(
@@ -68,8 +68,8 @@ def get_ai_suggestion(ticker: str) -> Dict[str, Any]:
         raise RuntimeError("GROQ_API_KEY is not set in environment variables")
 
     try:
-        client = Groq(api_key=api_key)
-        response = client.chat.completions.create(
+        client = AsyncGroq(api_key=api_key)
+        response = await client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": "You are a stock research assistant for Indian retail investors. Be direct and practical."},

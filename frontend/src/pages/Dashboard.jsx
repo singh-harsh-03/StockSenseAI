@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getWatchlist, addToWatchlist, removeFromWatchlist, getStockData } from '../services/api';
+import { getWatchlist, addToWatchlist, removeFromWatchlist } from '../services/api';
 import StockSearchInput from '../components/StockSearchInput';
 import './Dashboard.css';
 
@@ -8,7 +8,6 @@ export default function Dashboard() {
   const [watchlist, setWatchlist] = useState([]);
   const [stockInput, setStockInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [enriched, setEnriched] = useState({});
 
   const fetchWatchlist = async () => {
     try {
@@ -19,26 +18,9 @@ export default function Dashboard() {
     }
   };
 
-  const enrichStock = async (ticker) => {
-    try {
-      const res = await getStockData(ticker);
-      setEnriched((prev) => ({ ...prev, [ticker]: res.data.data }));
-    } catch {
-      // Silently fail on enrichment
-    }
-  };
-
   useEffect(() => {
     fetchWatchlist();
   }, []);
-
-  useEffect(() => {
-    watchlist.forEach((item) => {
-      if (!enriched[item.ticker]) {
-        enrichStock(item.ticker);
-      }
-    });
-  }, [watchlist]);
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -58,11 +40,6 @@ export default function Dashboard() {
   const handleRemove = async (ticker) => {
     try {
       await removeFromWatchlist(ticker);
-      setEnriched((prev) => {
-        const n = { ...prev };
-        delete n[ticker];
-        return n;
-      });
       fetchWatchlist();
     } catch {
       alert('Failed to remove stock');
@@ -98,37 +75,35 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="watchlist-grid">
-          {watchlist.map((item) => {
-            const data = enriched[item.ticker];
-            return (
-              <Link to={`/s/${encodeURIComponent(item.ticker)}`} key={item.id} className="watchlist-card">
-                <div className="wl-card-header">
-                  <h3>{item.ticker}</h3>
-                  <button
-                    className="wl-remove"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleRemove(item.ticker);
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-                {data ? (
-                  <>
-                    <p className="wl-price">₹{data.current_price}</p>
-                    <div className="wl-indicators">
-                      <span>RSI: {data.rsi}</span>
-                    </div>
-                  </>
-                ) : (
-                  <p className="wl-loading">Loading…</p>
-                )}
-              </Link>
-            );
-          })}
+          {watchlist.map((item) => (
+            <Link to={`/s/${encodeURIComponent(item.ticker)}`} key={item.id} className="watchlist-card">
+              <div className="wl-card-header">
+                <h3>{item.ticker}</h3>
+                <button
+                  className="wl-remove"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleRemove(item.ticker);
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+              {item.current_price ? (
+                <>
+                  <p className="wl-price">₹{item.current_price}</p>
+                  <div className="wl-indicators">
+                    <span>RSI: {item.rsi}</span>
+                  </div>
+                </>
+              ) : (
+                <p className="wl-loading">Loading…</p>
+              )}
+            </Link>
+          ))}
         </div>
       )}
     </div>
   );
 }
+
