@@ -17,11 +17,30 @@ CHART_PRESETS: Dict[str, tuple[str, str]] = {
 
 _INTRADAY_INTERVALS = frozenset({"1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h"})
 
-# TTL cache for fetch_stock_data 
-# Prevents duplicate Yahoo Finance calls when the AI endpoint is hit
-# right after loading the stock detail page.  Keyed by ticker.
-_stock_data_cache: Dict[str, tuple[float, Dict[str, Any]]] = {}  # ticker -> (timestamp, data)
+# ── TTL cache for raw yfinance data ──────────────────────────────────
+# Prevents duplicate Yahoo Finance calls for the exact same ticker/period/interval.
+_raw_history_cache: Dict[tuple[str, str, str], tuple[float, pd.DataFrame, dict]] = {}
 _CACHE_TTL = 60  # seconds
+
+async def _fetch_raw_history(ticker: str, period: str, interval: str) -> tuple[pd.DataFrame, dict]:
+    """Fetch raw history from yf and cache it by (ticker, period, interval)."""
+    cache_key = (ticker.upper(), period, interval)
+    cached = _raw_history_cache.get(cache_key)
+    
+    if cached and (time.monotonic() - cached[0]) < _CACHE_TTL:
+        return cached[1], cached[2]
+
+    stock = yf.Ticker(ticker)
+    df = await asyncio.to_thread(stock.history, period=period, interval=interval)
+    
+    # Also fetch info to cache it, since we need company name
+    try:
+        info = await asyncio.to_thread(getattr, stock, "info")
+    except Exception:
+        info = {}
+
+    _raw_history_cache[cache_key] = (time.monotonic(), df, info)
+    return df, info
 
 
 def _chart_date_str(ts, interval: str) -> str:
@@ -61,14 +80,7 @@ async def fetch_stock_data(ticker: str, period: str = "1y", interval: str = "1d"
     Expects yfinance ticker format (e.g. TCS.NS for NSE stocks).
     Results are cached for 60 seconds to avoid redundant Yahoo Finance calls.
     """
-    # ── Check cache ──
-    cache_key = ticker.upper()
-    cached = _stock_data_cache.get(cache_key)
-    if cached and (time.monotonic() - cached[0]) < _CACHE_TTL:
-        return cached[1]
-
-    stock = yf.Ticker(ticker)
-    df = await asyncio.to_thread(stock.history, period=period, interval=interval)
+    df, info = await _fetch_raw_history(ticker, period, interval)
 
     if df.empty:
         raise ValueError(f"No data found for ticker: {ticker}")
@@ -79,11 +91,10 @@ async def fetch_stock_data(ticker: str, period: str = "1y", interval: str = "1d"
     vol_avg = latest.get("vol_avg_20", 0)
     volume_trend = "above" if latest["Volume"] > vol_avg and vol_avg > 0 else "below"
 
-    # Company name from yfinance info
-    info = stock.info
+    # Company name from cached yfinance info
     company_name = info.get("shortName", info.get("longName", ticker))
 
-    result = {
+    return {
         "ticker": ticker,
         "company_name": company_name,
         "current_price": round(float(latest["Close"]), 2),
@@ -97,18 +108,12 @@ async def fetch_stock_data(ticker: str, period: str = "1y", interval: str = "1d"
         "volume_trend": volume_trend,
     }
 
-    # ── Store in cache ──
-    _stock_data_cache[cache_key] = (time.monotonic(), result)
-
-    return result
-
 
 async def fetch_price_history(ticker: str, period: str = "1y", interval: str = "1d") -> List[Dict[str, Any]]:
     """
     Return OHLCV price history + indicators as a list of dicts for charting.
     """
-    stock = yf.Ticker(ticker)
-    df = await asyncio.to_thread(stock.history, period=period, interval=interval)
+    df, _ = await _fetch_raw_history(ticker, period, interval)
 
     if df.empty:
         raise ValueError(f"No data found for ticker: {ticker}")

@@ -33,9 +33,16 @@ async def get_watchlist(user_id: UserId, db: Session = Depends(get_db)):
     """Get all watchlist items for the authenticated user, enriched with live prices."""
     items = db.query(Watchlist).filter(Watchlist.user_id == user_id).all()
 
-    # Fetch live data for all tickers concurrently
+    # Fetch live data for all tickers concurrently, but limit to 2 at a time
+    # to avoid triggering Yahoo Finance's strict concurrent rate limits.
+    sem = asyncio.Semaphore(2)
+
+    async def _enrich_with_sem(t: str):
+        async with sem:
+            return await _enrich_one(t)
+
     tickers = [item.ticker for item in items]
-    results = await asyncio.gather(*[_enrich_one(t) for t in tickers])
+    results = await asyncio.gather(*[_enrich_with_sem(t) for t in tickers])
     price_map = {t: r for t, r in zip(tickers, results) if r is not None}
 
     return {
